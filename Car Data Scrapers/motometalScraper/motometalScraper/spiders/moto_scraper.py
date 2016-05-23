@@ -1,11 +1,11 @@
 import scrapy
 import urlparse
-from motometal.items import MotometalItem
+from motometalScraper.items import MotometalscraperItem
 from scrapy.utils.response import get_base_url
 from scrapy.utils.url import urljoin_rfc
 
 class MotoSpider(scrapy.Spider):
-	name = 'moto'
+	name = 'motoscrape'
 	allowed_domains = ['motometalwheels.com']
 	start_urls = [
 		'http://www.motometalwheels.com/wheels.cfm'
@@ -14,7 +14,7 @@ class MotoSpider(scrapy.Spider):
 	def parse(self,response):
 		base_url = get_base_url(response)
 		for sel in response.xpath('//div[@class="small-12 columns"]/ul/li'):
-			item = MotometalItem()
+			item = MotometalscraperItem()
 			item['Type'] = 'Rims'
 			item['Vendor'] = 'Moto Metal'
 			item['Option3_Name'] = 'Wheels'
