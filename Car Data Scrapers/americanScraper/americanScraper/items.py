@@ -1,14 +1,5 @@
-# -*- coding: utf-8 -*-
-
-# Define here the models for your scraped items
-#
-# See documentation in:
-# http://doc.scrapy.org/en/latest/topics/items.html
-
 import scrapy
-
-
-class MotometalscraperItem(scrapy.Item):
+class AmericanscraperItem(scrapy.Item):
 	Type = scrapy.Field()
 	Vendor = scrapy.Field()
 	Title = scrapy.Field()
@@ -18,4 +9,3 @@ class MotometalscraperItem(scrapy.Item):
 	Option3_Value = scrapy.Field()
 	Option2_Value = scrapy.Field()
 	Option1_Value = scrapy.Field()
-	Image_Src = scrapy.Field()

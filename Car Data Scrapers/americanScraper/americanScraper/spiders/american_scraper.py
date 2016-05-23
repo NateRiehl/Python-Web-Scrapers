@@ -1,14 +1,14 @@
 import scrapy
 import urlparse
-from motometalScraper.items import MotometalscraperItem
+from americanScraper.items import AmericanscraperItem
 from scrapy.utils.response import get_base_url
 from scrapy.utils.url import urljoin_rfc
 
-class MotoSpider(scrapy.Spider):
-	name = 'motoscrape'
-	allowed_domains = ['motometalwheels.com']
+class AmericanSpider(scrapy.Spider):
+	name = 'american'
+	allowed_domains = ['americanforcewheels.com']
 	start_urls = [
-		'http://www.motometalwheels.com/wheels.cfm'
+		'http://americanforcewheels.com/index.php/en/wheels-collection'
 	]
 	
 	def parse(self,response):
@@ -16,16 +16,13 @@ class MotoSpider(scrapy.Spider):
 		for sel in response.xpath('//div[@class="small-12 columns"]/ul/li'):
 			item = MotometalscraperItem()
 			item['Type'] = 'Rims'
-			item['Vendor'] = 'Moto Metal'
+			item['Vendor'] = 'American Force'
 			item['Option3_Name'] = 'Wheels'
 			item['Option3_Value'] = '2,4,5,6'
-			title = sel.xpath('a/div[@class="meta"]/div[@class="product-name"]/text()').extract()
-			item['Title'] = title[0].strip()
-			img = sel.xpath('a/div[@class="image"]/img/@data-original').extract()
-			item['Image_Src'] = img[0]
+			item['Title'] = sel.xpath('a/div[@class="meta"]/div[@class="product-name"]/text()').extract()
 			title = sel.xpath('a/div[@class="meta"]/div[@class="product-finish"]/text()').extract()
 			item['Option2_Name'] = 'Color'
-			item['Option2_Value'] = title[0].strip()
+			item['Option2_Value'] = title[0]
 			relative_url = sel.xpath('a/@href').extract()
  			url = [urljoin_rfc(base_url,ru) for ru in relative_url]
 			request = scrapy.Request(url[0], callback=self.parse_product)
@@ -40,8 +37,7 @@ class MotoSpider(scrapy.Spider):
 		request = scrapy.Request(url[0], callback=self.parse_specs)
 		request.meta['item'] = item
 		yield request
-
-
+	
 	def parse_specs(self, response):
 		item = response.meta['item']
 		rows = response.xpath('//table[@class="wheel-specs"]/tbody/tr/td')
