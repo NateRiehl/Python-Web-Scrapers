@@ -1,44 +1,52 @@
+import time
 import scrapy
 import urlparse
 from americanScraper.items import AmericanscraperItem
 from scrapy.utils.response import get_base_url
 from scrapy.utils.url import urljoin_rfc
 from scrapy.http import FormRequest
+from selenium import webdriver
+import selenium.webdriver.chrome.service as service
 
 class AmericanSpider(scrapy.Spider):
 	name = 'american'
 	allowed_domains = ['americanforcewheels.com']
 	start_urls = [
-		'http://americanforcewheels.com/'
+		'http://americanforcewheels.com/index.php/en/wheels-collection'
 	]
-	
+		
 	def parse(self,response):
+		self.driver = webdriver.Chrome()
+		self.driver.get('http://americanforcewheels.com/index.php/en/wheels-collection')
+		i = 0
+		while i < 5000:
+			self.driver.execute_script("window.scrollTo(0,  "+ str(i + 50)+");")
+			i = i + 100
+			time.sleep(1)
+		wheels = self.driver.find_elements_by_class_name('wheelsBox')
 		base_url = get_base_url(response)
-		print(response)
-# 		for sel in response.xpath('//div[@id="WheelsGallery1"]/a'):
-# 			item = AmericanscraperItem()
-# 			item['Type'] = 'Rims'
-# 			item['Vendor'] = 'American Force'
-# 			item['Option3_Name'] = 'Wheels'
-# 			item['Option3_Value'] = '2,4,5,6'
-# 			item['Title'] = sel.xpath('div/p/text()').extract()
-# 			title = sel.xpath('').extract()
-# 			item['Option2_Name'] = 'Color'
-# 			item['Option2_Value'] = title[0]
-# 			relative_url = sel.xpath('').extract()
-#  			url = [urljoin_rfc(base_url,ru) for ru in relative_url]
-# 			request = scrapy.Request(url[0], callback=self.parse_product)
-# 			request.meta['item'] = item
-		#yield item			
+		for wheel in wheels:
+			item = AmericanscraperItem()
+			relative_url = wheel.get_attribute('href')
+			item['Type'] = 'Rims'
+			item['Vendor'] = 'American Force'
+			item['Title'] = wheel.text
+			img = wheel.find_element_by_tag_name('img')
+			item['ImageSrc'] = img.get_attribute('src')
+			request = scrapy.Request(relative_url, callback=self.parse_product)
+			request.meta['item'] = item
+			yield request		
 			
-# 	def parse_product(self, response):		
-# 		item = response.meta['item']
-# 		base_url = get_base_url(response)
-# 		relative_url = response.xpath('//div[@class="product-meta"]/a/@href').extract()
-# 		url = [urljoin_rfc(base_url,ru) for ru in relative_url]
-# 		request = scrapy.Request(url[0], callback=self.parse_specs)
-# 		request.meta['item'] = item
-# 		yield request
+	def parse_product(self, response):		
+		item = response.meta['item']
+		specs = response.xpath('//div[@class="fury"]/div[@class="tabe1"]/span/text()').re('\d\d"\*\d\d"|\d\d"\*\d"|\d\d"\*\d\.\d"|\d\d"\*\d\.\d\d"|\d\d\.\d"\*\d\d"|\d\d\.\d"\*\d\.\d"|\d\d\.\d"\*\d\.\d\d"|\d\d"')
+		item['Option1Name'] = 'Size'
+		item['MultipleOptionValues1'] = sorted(set(specs))
+		item['Option2Name'] = 'Color'
+		item['MultipleOptionValues2'] = 'Specify Color in Comments'
+		item['Option3Name'] = 'Wheels'
+		item['MultipleOptionValues3'] = '2,4,5,6'
+		yield item
 # 	
 # 	def parse_specs(self, response):
 # 		item = response.meta['item']

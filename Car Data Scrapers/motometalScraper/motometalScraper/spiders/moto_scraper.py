@@ -45,7 +45,7 @@ class MotoSpider(scrapy.Spider):
 	def parse_specs(self, response):
 		item = response.meta['item']
 		rows = response.xpath('//table[@class="wheel-specs"]/tbody/tr/td')
-		wheel_size = rows.re('\d\d" x \d\d"')
+		wheel_size = rows.re('\d\d" x \d\d"|\d\d" x \d"')
 		item['Option1_Name'] = 'Size'
 		item['Option1_Value'] = sorted(set(wheel_size))
 		yield item
